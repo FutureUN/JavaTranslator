@@ -10,22 +10,22 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             System.out.println(visitClassDeclaration(ctx.classDeclaration()));
             return (T) null;
         }
-            return (T) nultuscomtusl;
-            //TODO enumDeclaration interfaceDeclaration annotationTypeDeclaration
+        return (T) null;
+        //TODO enumDeclaration interfaceDeclaration annotationTypeDeclaration
+    }
+    @Override
+    public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
+        return (T)("class " + ctx.IDENTIFIER().toString()+ "{" + visitClassBody(ctx.classBody()) +  "}" );
+        // TODO typeParameters , typeType, TypeList
+    }
+    @Override
+    public  T visitClassBody(JavaParser.ClassBodyContext ctx){
+        String traduc = "";
+        for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
+            traduc += (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i)));
         }
-        @Override
-        public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
-            return (T)("class " + ctx.IDENTIFIER().toString()+ "{" + visitClassBody(ctx.classBody()) +  "}" );
-            // TODO typeParameters , typeType, TypeList
-        }
-        @Override
-        public  T visitClassBody(JavaParser.ClassBodyContext ctx){
-            String traduc = "";
-            for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
-                traduc += (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i)));
-            }
-            return (T)traduc;
-
+        return (T)traduc;
+    }
     @Override
     public T visitClassBodyDeclaration(JavaParser.ClassBodyDeclarationContext ctx) {
         if (!ctx.modifier().isEmpty()){
