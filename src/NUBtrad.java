@@ -6,6 +6,7 @@ import java.util.*;
 public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitTypeDeclaration(JavaParser.TypeDeclarationContext ctx) {
+
         if (!ctx.classDeclaration().isEmpty()){
             System.out.println(visitClassDeclaration(ctx.classDeclaration()));
             return (T) null;
@@ -15,7 +16,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
-        return (T)("class " + ctx.IDENTIFIER().toString()+ "{" + visitClassBody(ctx.classBody()) +  "}" );
+        return (T)("class " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
         // TODO typeParameters , typeType, TypeList
     }
     @Override
@@ -28,6 +29,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitClassBodyDeclaration(JavaParser.ClassBodyDeclarationContext ctx) {
+        JavaParser.MemberDeclarationContext tmp = ctx.memberDeclaration();
         if (!ctx.modifier().isEmpty()){
             return (T)visitMemberDeclaration(ctx.memberDeclaration());
         }
@@ -36,6 +38,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitMemberDeclaration(JavaParser.MemberDeclarationContext ctx){
+        JavaParser.MethodDeclarationContext tmp = ctx.methodDeclaration();
         if (!ctx.methodDeclaration().isEmpty()){
             return (T) visitMethodDeclaration(ctx.methodDeclaration());
         }
@@ -44,8 +47,22 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
-        return (T) ("soy la declaracion de un metodo");
+        //TODO TypeTypeOrVoid , [], thows
+        return (T)( ctx.IDENTIFIER().toString() + visitFormalParameters(ctx.formalParameters()) + "{\n" + " methodBody" + "\n}");
     }
-
+    @Override
+    public T visitFormalParameters(JavaParser.FormalParametersContext ctx) {
+        return (T)("(" + visitFormalParameterList(ctx.formalParameterList())+")");
+    }
+    @Override
+    public T visitFormalParameterList(JavaParser.FormalParameterListContext ctx){
+        if (ctx == null)
+            return (T) ("");
+        String traduc = "";
+        for(int i = 0 ; i < ctx.formalParameter().size() ; i++) {
+            traduc = (String) visitFormalParameter(ctx.formalParameter(i)) + ",";
+        }
+        return (T) ("");
+    }
 
 }
