@@ -6,8 +6,7 @@ import java.util.*;
 public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitTypeDeclaration(JavaParser.TypeDeclarationContext ctx) {
-
-        if (!ctx.classDeclaration().isEmpty()){
+        if (ctx.classDeclaration() != null){
             System.out.println(visitClassDeclaration(ctx.classDeclaration()));
             return (T) null;
         }
@@ -23,7 +22,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     public  T visitClassBody(JavaParser.ClassBodyContext ctx){
         String traduc = "";
         for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
-            traduc += (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i)));
+            traduc += (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
         }
         return (T)traduc;
     }
@@ -39,7 +38,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitMemberDeclaration(JavaParser.MemberDeclarationContext ctx){
         JavaParser.MethodDeclarationContext tmp = ctx.methodDeclaration();
-        if (!ctx.methodDeclaration().isEmpty()){
+        if (ctx.methodDeclaration() != null){
             return (T) visitMethodDeclaration(ctx.methodDeclaration());
         }
         // TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla
@@ -48,21 +47,46 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
         //TODO TypeTypeOrVoid , [], thows
-        return (T)( ctx.IDENTIFIER().toString() + visitFormalParameters(ctx.formalParameters()) + "{\n" + " methodBody" + "\n}");
+        return (T)( ctx.IDENTIFIER().toString() + visitFormalParameters(ctx.formalParameters()) + visitMethodBody(ctx.methodBody()));
     }
     @Override
     public T visitFormalParameters(JavaParser.FormalParametersContext ctx) {
-        return (T)("(" + visitFormalParameterList(ctx.formalParameterList())+")");
+        if (ctx.formalParameterList() == null)
+            return (T) ("");
+        else
+            return (T)("(" + visitFormalParameterList(ctx.formalParameterList())+")");
     }
     @Override
     public T visitFormalParameterList(JavaParser.FormalParameterListContext ctx){
-        if (ctx == null)
-            return (T) ("");
         String traduc = "";
         for(int i = 0 ; i < ctx.formalParameter().size() ; i++) {
-            traduc = (String) visitFormalParameter(ctx.formalParameter(i)) + ",";
+            traduc += (String) visitFormalParameter(ctx.formalParameter(i)) +  ",";
         }
-        return (T) ("");
+        if (ctx.lastFormalParameter() != null){
+            traduc = (String) visitLastFormalParameter(ctx.lastFormalParameter());
+        }else{
+            return (T)(traduc.substring(0,traduc.length()-1));
+        }
+        return (T) (traduc);
+        //TODO lastFormalParameter
+    }
+    @Override
+    public T visitFormalParameter(JavaParser.FormalParameterContext ctx){
+        return (T)(visitVariableDeclaratorId(ctx.variableDeclaratorId()));
+    }
+    @Override
+    public T visitVariableDeclaratorId(JavaParser.VariableDeclaratorIdContext ctx){
+        return (T)(String)(ctx.IDENTIFIER().toString());
+        //TODO [][]* (matrices)
+    }
+    @Override
+    public T visitMethodBody (JavaParser.MethodBodyContext ctx){
+        return (T) (visitBlock(ctx.block()));
+        //TODO ;
+    }
+    @Override
+    public T visitBlock(JavaParser.BlockContext ctx){
+        return (T)(String)("{\n" +  " methodBody" + "\n}");
     }
 
 }
