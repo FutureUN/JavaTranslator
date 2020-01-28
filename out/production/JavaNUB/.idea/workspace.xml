@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4c4894f3-cd05-4193-b90b-745a572a4a81" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/out/production/JavaNUB/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JavaNUB/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JavaNUB/NUBtrad.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JavaNUB/NUBtrad.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/NUBtrad.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/NUBtrad.java" afterDir="false" />
     </list>
@@ -104,23 +103,13 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/NUBtrad.java</url>
-          <line>62</line>
-          <option name="timeStamp" value="15" />
+          <line>89</line>
+          <option name="timeStamp" value="28" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/NUBtrad.java</url>
-          <line>65</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/NUBtrad.java</url>
-          <line>35</line>
-          <option name="timeStamp" value="18" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/NUBtrad.java</url>
-          <line>44</line>
-          <option name="timeStamp" value="20" />
+          <line>84</line>
+          <option name="timeStamp" value="29" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

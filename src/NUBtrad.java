@@ -52,7 +52,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitFormalParameters(JavaParser.FormalParametersContext ctx) {
         if (ctx.formalParameterList() == null)
-            return (T) ("");
+            return (T) ("()");
         else
             return (T)("(" + visitFormalParameterList(ctx.formalParameterList())+")");
     }
@@ -73,11 +73,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitFormalParameter(JavaParser.FormalParameterContext ctx){
         return (T)(visitVariableDeclaratorId(ctx.variableDeclaratorId()));
-    }
-    @Override
-    public T visitVariableDeclaratorId(JavaParser.VariableDeclaratorIdContext ctx){
-        return (T)(String)(ctx.IDENTIFIER().toString());
-        //TODO [][]* (matrices)
+        //TODO variable modifier
     }
     @Override
     public T visitMethodBody (JavaParser.MethodBodyContext ctx){
@@ -86,7 +82,104 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitBlock(JavaParser.BlockContext ctx){
-        return (T)(String)("{\n" +  " methodBody" + "\n}");
+        String trad = "";
+        for (int i = 0 ; i < ctx.blockStatement().size(); i++)
+            trad += (String) visitBlockStatement((ctx.blockStatement(i)));
+        return (T) ("{ \n" + trad + "} \n");
+    }
+    @Override
+    public T visitBlockStatement( JavaParser.BlockStatementContext ctx){
+        if (ctx.localVariableDeclaration() != null){
+            return (T) (visitLocalVariableDeclaration(ctx.localVariableDeclaration()) + "; \n");
+        }
+        return (T) null;
+        //TODO statement , localTypeDecl
+    }
+    @Override
+    public T visitLocalVariableDeclaration(JavaParser.LocalVariableDeclarationContext ctx){
+        //TODO variableModifier
+        return (T)(visitVariableDeclarators(ctx.variableDeclarators()));
+        // QUEDE ACA
+    }
+    @Override
+    public T visitVariableDeclarators(JavaParser.VariableDeclaratorsContext ctx){
+        String trad = "";
+        for ( int i = 0 ; i < ctx.variableDeclarator().size(); i++)
+            trad += (String) visitVariableDeclarator(ctx.variableDeclarator(i)) + ",";
+        return (T) (trad.substring(0,trad.length()-1));
+    }
+    @Override
+    public T visitVariableDeclarator(JavaParser.VariableDeclaratorContext ctx){
+        String trad = "";
+        if (ctx.variableInitializer() != null)
+            trad = "=" + (String) (visitVariableInitializer(ctx.variableInitializer()));
+        return (T) (visitVariableDeclaratorId(ctx.variableDeclaratorId()) + trad);
+    }
+    @Override
+    public T visitVariableDeclaratorId(JavaParser.VariableDeclaratorIdContext ctx){
+        return (T)(String)(ctx.IDENTIFIER().toString());
+        //TODO [][]* (matrices)
+    }
+    @Override
+    public T visitVariableInitializer (JavaParser.VariableInitializerContext ctx){
+        if (ctx.arrayInitializer() != null)
+            return (T) (visitArrayInitializer(ctx.arrayInitializer()));
+        else
+            return (T) (visitExpression(ctx.expression()));
+    }
+    @Override
+    public T visitArrayInitializer (JavaParser.ArrayInitializerContext ctx){
+        String trad = "";
+        for ( int i = 0 ; i < ctx.variableInitializer().size(); i++){
+            trad +=(String) visitVariableInitializer(ctx.variableInitializer(i)) + ",";
+        }
+        return (T) ( "[" + trad + "]");
+        // Hay algo raro de una coma despues de una variableInitializer
+    }
+    @Override
+    public T visitExpression(JavaParser.ExpressionContext ctx){
+        if (ctx.primary() != null){
+            return (T)(visitPrimary(ctx.primary()));
+        }
+        return (T) null;
+        //TODO TODO EL RESTO JAJA
+    }
+    @Override
+    public T visitPrimary(JavaParser.PrimaryContext ctx){
+        if ( ctx.LPAREN() != null)
+            return (T)visitExpression(ctx.expression());
+        if (ctx.literal() != null)
+            return (T)visitLiteral(ctx.literal());
+        if(ctx.IDENTIFIER() != null)
+            return (T)(ctx.IDENTIFIER().toString());
+        return (T) null;
+        // TODO FALTA TODO EL RESTO JAJA
+    }
+    @Override
+    public T visitLiteral (JavaParser.LiteralContext ctx){
+        if (ctx.integerLiteral() != null)
+            return (T) "Soy un integer";
+        if (ctx.floatLiteral() != null)
+            return (T) "Soy un float";
+        if (ctx.CHAR_LITERAL() != null)
+            return (T) ctx.CHAR_LITERAL().toString();
+        if (ctx.STRING_LITERAL() != null)
+            return (T) ctx.STRING_LITERAL().toString();
+        if (ctx.BOOL_LITERAL() != null)
+            return (T) ctx.BOOL_LITERAL().toString();
+        else
+            return (T) ctx.NULL_LITERAL().toString();
+    }
+    @Override
+    public T visitTypeType(JavaParser.TypeTypeContext ctx){
+        if (ctx.classOrInterfaceType() != null)
+            return (T)(visitClassOrInterfaceType(ctx.classOrInterfaceType()));
+        else
+            return (T)(visitPrimitiveType(ctx.primitiveType()));
+    }
+    @Override
+    public T visitPrimitiveType (JavaParser.PrimitiveTypeContext ctx){
+        return (T) "";
     }
 
 }
