@@ -92,8 +92,11 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.localVariableDeclaration() != null){
             return (T) (visitLocalVariableDeclaration(ctx.localVariableDeclaration()) + "; \n");
         }
+        if (ctx.statement() != null){
+            return (T) (visitStatement(ctx.statement()));
+        }
         return (T) null;
-        //TODO statement , localTypeDecl
+        //TODO localTypeDecl
     }
     @Override
     public T visitLocalVariableDeclaration(JavaParser.LocalVariableDeclarationContext ctx){
@@ -139,9 +142,17 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitExpression(JavaParser.ExpressionContext ctx){
         if (ctx.primary() != null){
-            return (T)(visitPrimary(ctx.primary()));
+            return (T)(visitPrimary(ctx.primary()) );
         }
-        return (T) null;
+        if (ctx.LBRACK()!= null)
+            return (T)(visitExpression(ctx.expression(0))+"[" + visitExpression(ctx.expression(1))+ "]");
+        if (ctx.bop != null) {
+            String trad = "";
+            if (ctx.QUESTION() != null)
+                trad = (String) visitExpression(ctx.expression(2));
+            return (T) (visitExpression(ctx.expression(0)) + ctx.bop.getText() + visitExpression(ctx.expression(1)) + trad);
+        }
+            return (T) ("caso prueba");
         //TODO TODO EL RESTO JAJA
     }
     @Override
@@ -153,22 +164,20 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if(ctx.IDENTIFIER() != null)
             return (T)(ctx.IDENTIFIER().toString());
         return (T) null;
-        // TODO FALTA TODO EL RESTO JAJA
+        // TODO FALTA: THIS, SUPER , TYPTTYPTORVOID, NONWILDCARDTYPEARG
+    }
+    @Override
+    public T visitStatement (JavaParser.StatementContext ctx){
+        if (ctx.statementExpression != null)
+            return (T) (visitExpression(ctx.statementExpression)+ ";") ;
+        if (ctx.identifierLabel != null)
+            return (T) ctx.IDENTIFIER().getText();
+        return (T) null;
+        //TODO TODO EL RESTO JAJA
     }
     @Override
     public T visitLiteral (JavaParser.LiteralContext ctx){
-        if (ctx.integerLiteral() != null)
-            return (T) "Soy un integer";
-        if (ctx.floatLiteral() != null)
-            return (T) "Soy un float";
-        if (ctx.CHAR_LITERAL() != null)
-            return (T) ctx.CHAR_LITERAL().toString();
-        if (ctx.STRING_LITERAL() != null)
-            return (T) ctx.STRING_LITERAL().toString();
-        if (ctx.BOOL_LITERAL() != null)
-            return (T) ctx.BOOL_LITERAL().toString();
-        else
-            return (T) ctx.NULL_LITERAL().toString();
+        return (T) ctx.getText();
     }
     @Override
     public T visitTypeType(JavaParser.TypeTypeContext ctx){
