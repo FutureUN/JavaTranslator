@@ -147,12 +147,14 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.LBRACK()!= null)
             return (T)(visitExpression(ctx.expression(0))+"[" + visitExpression(ctx.expression(1))+ "]");
         if (ctx.bop != null) {
+            if (ctx.DOT() != null)
+                return (T) "aun no ta echo";
             String trad = "";
             if (ctx.QUESTION() != null)
                 trad = (String) visitExpression(ctx.expression(2));
             return (T) (visitExpression(ctx.expression(0)) + ctx.bop.getText() + visitExpression(ctx.expression(1)) + trad);
         }
-            return (T) ("caso prueba");
+        return (T) ("caso prueba");
         //TODO TODO EL RESTO JAJA
     }
     @Override
