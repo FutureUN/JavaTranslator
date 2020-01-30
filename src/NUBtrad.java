@@ -77,6 +77,8 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitMethodBody (JavaParser.MethodBodyContext ctx){
+        if (ctx.block() == null)
+            return (T) "";
         return (T) (visitBlock(ctx.block()));
         //TODO ;
     }
