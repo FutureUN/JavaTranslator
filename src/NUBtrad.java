@@ -15,14 +15,16 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
-        return (T)("class " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
+        return (T)("class " + ctx.depth() + " - " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
         // TODO typeParameters , typeType, TypeList
     }
     @Override
     public  T visitClassBody(JavaParser.ClassBodyContext ctx){
         String traduc = "";
         for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
-            traduc += (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
+            traduc += "\t".repeat(ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
+
+
         }
         return (T)traduc;
     }
@@ -39,7 +41,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     public T visitMemberDeclaration(JavaParser.MemberDeclarationContext ctx){
         JavaParser.MethodDeclarationContext tmp = ctx.methodDeclaration();
         if (ctx.methodDeclaration() != null){
-            return (T) visitMethodDeclaration(ctx.methodDeclaration());
+            return (T) (visitMethodDeclaration(ctx.methodDeclaration()));
         }
         // TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla
         return (T) null;
@@ -86,8 +88,8 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     public T visitBlock(JavaParser.BlockContext ctx){
         String trad = "";
         for (int i = 0 ; i < ctx.blockStatement().size(); i++)
-            trad += (String) visitBlockStatement((ctx.blockStatement(i)));
-        return (T) ("{ \n" + trad + "} \n");
+            trad += "\t".repeat(ctx.depth()-7) +  (String) visitBlockStatement((ctx.blockStatement(i)));
+        return (T) ("{ \n" + trad + "\n" + "\t".repeat(ctx.depth()-8) + "}");
     }
     @Override
     public T visitBlockStatement( JavaParser.BlockStatementContext ctx){
@@ -147,10 +149,10 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             return (T)(visitPrimary(ctx.primary()) );
         }
         if (ctx.LBRACK()!= null)
-            return (T)(visitExpression(ctx.expression(0))+"[" + visitExpression(ctx.expression(1))+ "]");
+            return (T)( visitExpression(ctx.expression(0))+"[" + visitExpression(ctx.expression(1))+ "]");
         if (ctx.bop != null) {
             if (ctx.DOT() != null)
-                return (T) "aun no ta echo";
+                return (T) ( "aun no ta echo");
             String trad = "";
             if (ctx.QUESTION() != null)
                 trad = (String) visitExpression(ctx.expression(2));
@@ -175,7 +177,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.statementExpression != null)
             return (T) (visitExpression(ctx.statementExpression)+ ";") ;
         if (ctx.identifierLabel != null)
-            return (T) ctx.IDENTIFIER().getText();
+            return (T) (ctx.IDENTIFIER().getText() );
         return (T) null;
         //TODO TODO EL RESTO JAJA
     }
