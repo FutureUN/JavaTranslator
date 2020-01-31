@@ -4,6 +4,13 @@ import java.io.*;
 import java.util.*;
 
 public class NUBtrad<T> extends JavaParserBaseVisitor {
+    public String RepeatChar(char c, int n) {
+        String str = "";
+        for (int i=0; i<n; i++) str+=c;
+        return str;
+    }
+
+
     @Override
     public T visitTypeDeclaration(JavaParser.TypeDeclarationContext ctx) {
         if (ctx.classDeclaration() != null){
@@ -22,7 +29,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     public  T visitClassBody(JavaParser.ClassBodyContext ctx){
         String traduc = "";
         for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
-            traduc += "\t".repeat(ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
+            traduc += RepeatChar('\t',ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
 
 
         }
@@ -88,8 +95,8 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     public T visitBlock(JavaParser.BlockContext ctx){
         String trad = "";
         for (int i = 0 ; i < ctx.blockStatement().size(); i++)
-            trad += "\t".repeat(ctx.depth()-7) +  (String) visitBlockStatement((ctx.blockStatement(i)));
-        return (T) ("{ \n" + trad + "\n" + "\t".repeat(ctx.depth()-8) + "}");
+            trad += RepeatChar('\t',ctx.depth()-7) +  (String) visitBlockStatement((ctx.blockStatement(i)));
+        return (T) ("{ \n" + trad + "\n" + RepeatChar('\t',ctx.depth()-8) + "}");
     }
     @Override
     public T visitBlockStatement( JavaParser.BlockStatementContext ctx){
