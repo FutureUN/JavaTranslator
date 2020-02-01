@@ -83,12 +83,19 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
 
         JavaParser.MemberDeclarationContext tmp = ctx.memberDeclaration();
-        if (!ctx.modifier().isEmpty()){
-            return (T)visitMemberDeclaration(ctx.memberDeclaration());
+        String modifier = "";  // Solo usaremos STATIC
+
+        for ( int i =0; i < ctx.modifier().size() ; i ++){
+            if(ctx.modifier(i).classOrInterfaceModifier().STATIC() != null){
+                modifier = "static ";
+            }
         }
+        String traduc  =  modifier +  (String)(visitMemberDeclaration(ctx.memberDeclaration())) ;
+        return (T) traduc;
         //TODO STATIC Y ;
-        return (T) null;
     }
+
+
     @Override
     public T visitMemberDeclaration(JavaParser.MemberDeclarationContext ctx){
         JavaParser.MethodDeclarationContext tmp = ctx.methodDeclaration();
@@ -101,6 +108,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
         //TODO TypeTypeOrVoid , [], thows
+
         return (T)( ctx.IDENTIFIER().toString() + visitFormalParameters(ctx.formalParameters()) + visitMethodBody(ctx.methodBody()));
     }
     @Override
@@ -154,6 +162,15 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         return (T) null;
         //TODO localTypeDecl
     }
+
+    @Override
+    public T visitStatement(JavaParser.StatementContext ctx){
+        if(ctx.RETURN() != null ){
+            return (T) "return" ;
+        }
+        return (T)null;
+    }
+
     @Override
     public T visitLocalVariableDeclaration(JavaParser.LocalVariableDeclarationContext ctx){
         //TODO variableModifier
