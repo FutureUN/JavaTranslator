@@ -78,10 +78,6 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitClassBodyDeclaration(JavaParser.ClassBodyDeclarationContext ctx) {
 
-
-
-
-
         JavaParser.MemberDeclarationContext tmp = ctx.memberDeclaration();
         String modifier = "";  // Solo usaremos STATIC
 
@@ -161,14 +157,6 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         }
         return (T) null;
         //TODO localTypeDecl
-    }
-
-    @Override
-    public T visitStatement(JavaParser.StatementContext ctx){
-        if(ctx.RETURN() != null ){
-            return (T) "return" ;
-        }
-        return (T)null;
     }
 
     @Override
