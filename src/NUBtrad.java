@@ -147,7 +147,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         for ( int i = 0 ; i < ctx.variableInitializer().size(); i++){
             trad +=(String) visitVariableInitializer(ctx.variableInitializer(i)) + ",";
         }
-        return (T) ( "[" + trad + "]");
+        return (T) ( "[" + trad.substring(0,trad.length()-1) + "]");
         // Hay algo raro de una coma despues de una variableInitializer
     }
     @Override
@@ -158,8 +158,12 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.LBRACK()!= null)
             return (T)( visitExpression(ctx.expression(0))+"[" + visitExpression(ctx.expression(1))+ "]");
         if (ctx.bop != null) {
-            if (ctx.DOT() != null)
+            if (ctx.DOT() != null){
+                if (ctx.IDENTIFIER() != null) return (T) (visitExpression(ctx.expression(0))+"." + ctx.IDENTIFIER().getText());
+                if (ctx.methodCall() != null) return (T) (visitExpression(ctx.expression(0))+"." + visitMethodCall(ctx.methodCall()));
                 return (T) ( "aun no ta echo");
+                //TODO this, new , super , explicitGenericInv
+            }
             String trad = "";
             if (ctx.QUESTION() != null)
                 trad = (String) visitExpression(ctx.expression(2));
@@ -182,11 +186,25 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitStatement (JavaParser.StatementContext ctx){
         if (ctx.statementExpression != null)
-            return (T) (visitExpression(ctx.statementExpression)+ ";") ;
+            return (T) (visitExpression(ctx.statementExpression)+ "; \n") ;
         if (ctx.identifierLabel != null)
             return (T) (ctx.IDENTIFIER().getText() );
         return (T) null;
         //TODO TODO EL RESTO JAJA
+    }
+    @Override
+    public T visitMethodCall (JavaParser.MethodCallContext ctx){
+        String trad = "()";
+        if (ctx.expressionList() != null) trad = "(" + (String) visitExpressionList(ctx.expressionList()) + ")" ;
+        if (ctx.IDENTIFIER() != null) return (T) (ctx.IDENTIFIER() + trad);
+        else return (T) trad;  // TODO THIS, SUPER
+    }
+    @Override
+    public T visitExpressionList (JavaParser.ExpressionListContext ctx){
+        String trad = "" ;
+        for ( int i = 0 ; i < ctx.expression().size() ; i++)
+            trad += (String) visitExpression(ctx.expression(i)) + ",";
+        return (T) trad.substring(0,trad.length()-1);
     }
     @Override
     public T visitLiteral (JavaParser.LiteralContext ctx){
