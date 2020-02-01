@@ -1,4 +1,4 @@
-// Generated from /home/laurasantos/Documents/NUB/JavaNUB/grammar/JavaParser.g4 by ANTLR 4.7.2
+// Generated from /home/sebastian/UN/lenguajes/JavaTranslator/grammar/JavaParser.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -10,6 +10,8 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class JavaParser extends Parser {
+	public static Object MemberDeclarationContext;
+
 	static { RuntimeMetaData.checkVersion("4.7.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;

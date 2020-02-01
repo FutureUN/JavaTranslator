@@ -1,0 +1,9 @@
+public class Quaternion {
+
+  public boolean matches(Quaternion quaternion) {
+    return _quaternion[0] == quaternion._quaternion[0]
+        && _quaternion[1] == quaternion._quaternion[1]
+        && _quaternion[2] == quaternion._quaternion[2]
+        && _quaternion[3] == quaternion._quaternion[3];
+  }
+}

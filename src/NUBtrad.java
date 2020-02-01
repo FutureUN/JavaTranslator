@@ -4,6 +4,13 @@ import java.io.*;
 import java.util.*;
 
 public class NUBtrad<T> extends JavaParserBaseVisitor {
+    public String RepeatChar(char c, int n) {
+        String str = "";
+        for (int i=0; i<n; i++) str+=c;
+        return str;
+    }
+
+
     @Override
     public T visitTypeDeclaration(JavaParser.TypeDeclarationContext ctx) {
         if (ctx.classDeclaration() != null){
@@ -15,31 +22,85 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
-        return (T)("class " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
+      //  return (T)("class " + ctx.depth() + " - " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
         // TODO typeParameters , typeType, TypeList
+        visitClassBody(ctx.classBody());
+        return null;
     }
     @Override
     public  T visitClassBody(JavaParser.ClassBodyContext ctx){
-        String traduc = "";
+        int cnt_methods = 0;
+        System.out.println("los metodos de mi clase son: ");
+        TreeSet<String> RepeatedMethodIds = new TreeSet<>();
+        Map <String, ArrayList<Integer>> MapMethodsIdx = new HashMap<>();
+        for (int i = 0; i<ctx.classBodyDeclaration().size(); i++) {
+            JavaParser.ClassBodyDeclarationContext body_declaration =  ctx.classBodyDeclaration().get(i);
+            
+            if (body_declaration.memberDeclaration() == null) continue;
+            cnt_methods ++;
+            JavaParser.MemberDeclarationContext member = body_declaration.memberDeclaration();
+
+            if (member.methodDeclaration() != null) {
+                String ID = member.methodDeclaration().IDENTIFIER().getText();
+             
+                if (!MapMethodsIdx.containsKey(ID)) MapMethodsIdx.put(ID, new ArrayList<Integer>());
+                MapMethodsIdx.get(ID).add(i);
+             
+                if (MapMethodsIdx.get(ID).size() > 1)
+                    RepeatedMethodIds.add(ID);
+            }
+        }
+
+        System.out.println("there are " + cnt_methods + " methods");
+        for (String id : RepeatedMethodIds){
+            System.out.print( id + " -> [");
+            Boolean first = true;
+            for (Integer idx : MapMethodsIdx.get(id)) {
+                if (!first) System.out.print( ", ");
+                System.out.print(idx);
+                first = false;
+            }
+            System.out.println("]");
+        }
+       
+
+        return null;
+       /* String traduc = "";
         for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
-            traduc += (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
+            traduc += RepeatChar('\t',ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
+
+
         }
         return (T)traduc;
+        */
     }
+
     @Override
     public T visitClassBodyDeclaration(JavaParser.ClassBodyDeclarationContext ctx) {
+
+
+
+
+
         JavaParser.MemberDeclarationContext tmp = ctx.memberDeclaration();
-        if (!ctx.modifier().isEmpty()){
-            return (T)visitMemberDeclaration(ctx.memberDeclaration());
+        String modifier = "";  // Solo usaremos STATIC
+
+        for ( int i =0; i < ctx.modifier().size() ; i ++){
+            if(ctx.modifier(i).classOrInterfaceModifier().STATIC() != null){
+                modifier = "static ";
+            }
         }
+        String traduc  =  modifier +  (String)(visitMemberDeclaration(ctx.memberDeclaration())) ;
+        return (T) traduc;
         //TODO STATIC Y ;
-        return (T) null;
     }
+
+
     @Override
     public T visitMemberDeclaration(JavaParser.MemberDeclarationContext ctx){
         JavaParser.MethodDeclarationContext tmp = ctx.methodDeclaration();
         if (ctx.methodDeclaration() != null){
-            return (T) visitMethodDeclaration(ctx.methodDeclaration());
+            return (T) (visitMethodDeclaration(ctx.methodDeclaration()));
         }
         // TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla
         return (T) null;
@@ -47,6 +108,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
         //TODO TypeTypeOrVoid , [], thows
+
         return (T)( ctx.IDENTIFIER().toString() + visitFormalParameters(ctx.formalParameters()) + visitMethodBody(ctx.methodBody()));
     }
     @Override
@@ -77,6 +139,8 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitMethodBody (JavaParser.MethodBodyContext ctx){
+        if (ctx.block() == null)
+            return (T) "";
         return (T) (visitBlock(ctx.block()));
         //TODO ;
     }
@@ -84,17 +148,29 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     public T visitBlock(JavaParser.BlockContext ctx){
         String trad = "";
         for (int i = 0 ; i < ctx.blockStatement().size(); i++)
-            trad += (String) visitBlockStatement((ctx.blockStatement(i)));
-        return (T) ("{ \n" + trad + "} \n");
+            trad += RepeatChar('\t',ctx.depth()-7) +  (String) visitBlockStatement((ctx.blockStatement(i)));
+        return (T) ("{ \n" + trad + "\n" + RepeatChar('\t',ctx.depth()-8) + "}");
     }
     @Override
     public T visitBlockStatement( JavaParser.BlockStatementContext ctx){
         if (ctx.localVariableDeclaration() != null){
             return (T) (visitLocalVariableDeclaration(ctx.localVariableDeclaration()) + "; \n");
         }
+        if (ctx.statement() != null){
+            return (T) (visitStatement(ctx.statement()));
+        }
         return (T) null;
-        //TODO statement , localTypeDecl
+        //TODO localTypeDecl
     }
+
+    @Override
+    public T visitStatement(JavaParser.StatementContext ctx){
+        if(ctx.RETURN() != null ){
+            return (T) "return" ;
+        }
+        return (T)null;
+    }
+
     @Override
     public T visitLocalVariableDeclaration(JavaParser.LocalVariableDeclarationContext ctx){
         //TODO variableModifier
@@ -133,15 +209,29 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         for ( int i = 0 ; i < ctx.variableInitializer().size(); i++){
             trad +=(String) visitVariableInitializer(ctx.variableInitializer(i)) + ",";
         }
-        return (T) ( "[" + trad + "]");
+        return (T) ( "[" + trad.substring(0,trad.length()-1) + "]");
         // Hay algo raro de una coma despues de una variableInitializer
     }
     @Override
     public T visitExpression(JavaParser.ExpressionContext ctx){
         if (ctx.primary() != null){
-            return (T)(visitPrimary(ctx.primary()));
+            return (T)(visitPrimary(ctx.primary()) );
         }
-        return (T) null;
+        if (ctx.LBRACK()!= null)
+            return (T)( visitExpression(ctx.expression(0))+"[" + visitExpression(ctx.expression(1))+ "]");
+        if (ctx.bop != null) {
+            if (ctx.DOT() != null){
+                if (ctx.IDENTIFIER() != null) return (T) (visitExpression(ctx.expression(0))+"." + ctx.IDENTIFIER().getText());
+                if (ctx.methodCall() != null) return (T) (visitExpression(ctx.expression(0))+"." + visitMethodCall(ctx.methodCall()));
+                return (T) ( "aun no ta echo");
+                //TODO this, new , super , explicitGenericInv
+            }
+            String trad = "";
+            if (ctx.QUESTION() != null)
+                trad = (String) visitExpression(ctx.expression(2));
+            return (T) (visitExpression(ctx.expression(0)) + ctx.bop.getText() + visitExpression(ctx.expression(1)) + trad);
+        }
+        return (T) ("caso prueba");
         //TODO TODO EL RESTO JAJA
     }
     @Override
@@ -153,22 +243,34 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if(ctx.IDENTIFIER() != null)
             return (T)(ctx.IDENTIFIER().toString());
         return (T) null;
-        // TODO FALTA TODO EL RESTO JAJA
+        // TODO FALTA: THIS, SUPER , TYPTTYPTORVOID, NONWILDCARDTYPEARG
+    }
+    @Override
+    public T visitStatement (JavaParser.StatementContext ctx){
+        if (ctx.statementExpression != null)
+            return (T) (visitExpression(ctx.statementExpression)+ "; \n") ;
+        if (ctx.identifierLabel != null)
+            return (T) (ctx.IDENTIFIER().getText() );
+        return (T) null;
+        //TODO TODO EL RESTO JAJA
+    }
+    @Override
+    public T visitMethodCall (JavaParser.MethodCallContext ctx){
+        String trad = "()";
+        if (ctx.expressionList() != null) trad = "(" + (String) visitExpressionList(ctx.expressionList()) + ")" ;
+        if (ctx.IDENTIFIER() != null) return (T) (ctx.IDENTIFIER() + trad);
+        else return (T) trad;  // TODO THIS, SUPER
+    }
+    @Override
+    public T visitExpressionList (JavaParser.ExpressionListContext ctx){
+        String trad = "" ;
+        for ( int i = 0 ; i < ctx.expression().size() ; i++)
+            trad += (String) visitExpression(ctx.expression(i)) + ",";
+        return (T) trad.substring(0,trad.length()-1);
     }
     @Override
     public T visitLiteral (JavaParser.LiteralContext ctx){
-        if (ctx.integerLiteral() != null)
-            return (T) "Soy un integer";
-        if (ctx.floatLiteral() != null)
-            return (T) "Soy un float";
-        if (ctx.CHAR_LITERAL() != null)
-            return (T) ctx.CHAR_LITERAL().toString();
-        if (ctx.STRING_LITERAL() != null)
-            return (T) ctx.STRING_LITERAL().toString();
-        if (ctx.BOOL_LITERAL() != null)
-            return (T) ctx.BOOL_LITERAL().toString();
-        else
-            return (T) ctx.NULL_LITERAL().toString();
+        return (T) ctx.getText();
     }
     @Override
     public T visitTypeType(JavaParser.TypeTypeContext ctx){

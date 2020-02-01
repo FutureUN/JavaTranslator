@@ -1,4 +1,4 @@
-// Generated from /home/laurasantos/Documents/NUB/JavaNUB/grammar/JavaParser.g4 by ANTLR 4.7.2
+// Generated from /home/sebastian/UN/lenguajes/JavaTranslator/grammar/JavaParser.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
