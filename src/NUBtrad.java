@@ -22,21 +22,66 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
-        return (T)("class " + ctx.depth() + " - " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
+      //  return (T)("class " + ctx.depth() + " - " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
         // TODO typeParameters , typeType, TypeList
+        visitClassBody(ctx.classBody());
+        return null;
     }
     @Override
     public  T visitClassBody(JavaParser.ClassBodyContext ctx){
-        String traduc = "";
+        int cnt_methods = 0;
+        System.out.println("los metodos de mi clase son: ");
+        TreeSet<String> RepeatedMethodIds = new TreeSet<>();
+        Map <String, ArrayList<Integer>> MapMethodsIdx = new HashMap<>();
+        for (int i = 0; i<ctx.classBodyDeclaration().size(); i++) {
+            JavaParser.ClassBodyDeclarationContext body_declaration =  ctx.classBodyDeclaration().get(i);
+            
+            if (body_declaration.memberDeclaration() == null) continue;
+            cnt_methods ++;
+            JavaParser.MemberDeclarationContext member = body_declaration.memberDeclaration();
+
+            if (member.methodDeclaration() != null) {
+                String ID = member.methodDeclaration().IDENTIFIER().getText();
+             
+                if (!MapMethodsIdx.containsKey(ID)) MapMethodsIdx.put(ID, new ArrayList<Integer>());
+                MapMethodsIdx.get(ID).add(i);
+             
+                if (MapMethodsIdx.get(ID).size() > 1)
+                    RepeatedMethodIds.add(ID);
+            }
+        }
+
+        System.out.println("there are " + cnt_methods + " methods");
+        for (String id : RepeatedMethodIds){
+            System.out.print( id + " -> [");
+            Boolean first = true;
+            for (Integer idx : MapMethodsIdx.get(id)) {
+                if (!first) System.out.print( ", ");
+                System.out.print(idx);
+                first = false;
+            }
+            System.out.println("]");
+        }
+       
+
+        return null;
+       /* String traduc = "";
         for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
             traduc += RepeatChar('\t',ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
 
 
         }
         return (T)traduc;
+        */
     }
+
     @Override
     public T visitClassBodyDeclaration(JavaParser.ClassBodyDeclarationContext ctx) {
+
+
+
+
+
         JavaParser.MemberDeclarationContext tmp = ctx.memberDeclaration();
         if (!ctx.modifier().isEmpty()){
             return (T)visitMemberDeclaration(ctx.memberDeclaration());
