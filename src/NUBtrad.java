@@ -1,9 +1,47 @@
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
-import java.io.*;
 import java.util.*;
 
 public class NUBtrad<T> extends JavaParserBaseVisitor {
+
+
+    public void SearchForRepeatedMethods(TreeSet<String> RepeatedMethodIds,
+                                         Map <String, ArrayList<Integer>> MapMethodsIdx,
+                                         Map <Integer, Boolean> BodyDecHasDupMethod,
+                                         JavaParser.ClassBodyContext ctx) {
+
+        for (int i = 0; i<ctx.classBodyDeclaration().size(); i++) {
+
+            JavaParser.ClassBodyDeclarationContext body_declaration =  ctx.classBodyDeclaration().get(i);
+            if (body_declaration.memberDeclaration() == null) continue;
+            JavaParser.MemberDeclarationContext member = body_declaration.memberDeclaration();
+
+            if (member.methodDeclaration() != null) {
+
+                String ID = member.methodDeclaration().IDENTIFIER().getText();
+
+                if (!MapMethodsIdx.containsKey(ID)) MapMethodsIdx.put(ID, new ArrayList<>());
+
+                MapMethodsIdx.get(ID).add(i);
+
+                if (MapMethodsIdx.get(ID).size() > 1) {
+                    if (!BodyDecHasDupMethod.containsKey(MapMethodsIdx.get(ID).get(0)))
+                        BodyDecHasDupMethod.put(MapMethodsIdx.get(ID).get(0), true);
+                    BodyDecHasDupMethod.put(i, true);
+                    RepeatedMethodIds.add(ID);
+                }
+            }
+        }
+    }
+
+    public String MergeMethods(String IDMethod,
+                             Map<String, ArrayList<Integer>> MapMethodsIdx,
+                             JavaParser.ClassBodyContext ctx) {
+        String ret = "";
+        for (Integer idx : MapMethodsIdx.get(IDMethod) ) {
+            ret += RepeatChar('\t', ctx.depth()-2)  + ctx.classBodyDeclaration(idx).getText() + "\n";
+        }
+        return ret;
+    }
+
     public String RepeatChar(char c, int n) {
         String str = "";
         for (int i=0; i<n; i++) str+=c;
@@ -21,6 +59,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         //TODO enumDeclaration interfaceDeclaration annotationTypeDeclaration
     }
     @Override
+
     public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
         return (T)("class " + ctx.depth() + " - " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
         // TODO typeParameters , typeType, TypeList
@@ -29,39 +68,17 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public  T visitClassBody(JavaParser.ClassBodyContext ctx){
         int cnt_methods = 0;
-        TreeSet<String> RepeatedMethodIds = new TreeSet<>();
 
+        TreeSet<String> RepeatedMethodIds = new TreeSet<>();
         Map <String, ArrayList<Integer>> MapMethodsIdx = new HashMap<>();
         Map <Integer, Boolean> BodyDecHasDupMethod = new HashMap<>();
 
-        for (int i = 0; i<ctx.classBodyDeclaration().size(); i++) {
-            JavaParser.ClassBodyDeclarationContext body_declaration =  ctx.classBodyDeclaration().get(i);
-            
-            if (body_declaration.memberDeclaration() == null) continue;
-            cnt_methods ++;
-            JavaParser.MemberDeclarationContext member = body_declaration.memberDeclaration();
-
-            if (member.methodDeclaration() != null) {
-                String ID = member.methodDeclaration().IDENTIFIER().getText();
-             
-                if (!MapMethodsIdx.containsKey(ID)) MapMethodsIdx.put(ID, new ArrayList<Integer>());
-                MapMethodsIdx.get(ID).add(i);
-             
-                if (MapMethodsIdx.get(ID).size() > 1) {
-                    if (!BodyDecHasDupMethod.containsKey(MapMethodsIdx.get(ID).get(0)))
-                        BodyDecHasDupMethod.put(MapMethodsIdx.get(ID).get(0), true);
-                    BodyDecHasDupMethod.put(i, true);
-                    RepeatedMethodIds.add(ID);
-                }
-            }
-        }
+        SearchForRepeatedMethods(RepeatedMethodIds, MapMethodsIdx, BodyDecHasDupMethod, ctx);
 
         String traduc = "";
         for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
             if(BodyDecHasDupMethod.containsKey(i)) continue;
             traduc += RepeatChar('\t',ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
-
-
         }
 
 
@@ -69,7 +86,10 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
 
         for ( String ID : RepeatedMethodIds) {
-            traduc += RepeatChar('\t',ctx.depth()-3)+ ID + "(){\n //TODO: merge methods \n }\n";
+            traduc += RepeatChar('\t',ctx.depth()-3)+ ID + "(){\n //TODO: merge methods \n";
+
+            traduc += MergeMethods(ID, MapMethodsIdx, ctx) +
+                    RepeatChar('\t', ctx.depth()-3) + "}\n";
 
         }
 
