@@ -100,8 +100,20 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.methodDeclaration() != null){
             return (T) (visitMethodDeclaration(ctx.methodDeclaration()));
         }
+        if (ctx.constructorDeclaration() != null){
+
+
+
+            return (T) (visitConstructorDeclaration(ctx.constructorDeclaration()));
+        }
         // TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla
         return (T) "TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla";
+    }
+
+    @Override
+    public T visitConstructorDeclaration(JavaParser.ConstructorDeclarationContext ctx){
+        return (T) ( ctx.IDENTIFIER().getText() + visitFormalParameters(ctx.formalParameters()) + visitBlock(ctx.constructorBody));
+
     }
     @Override
     public T visitMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
@@ -164,7 +176,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitLocalVariableDeclaration(JavaParser.LocalVariableDeclarationContext ctx){
         //TODO variableModifier
-        return (T)(visitVariableDeclarators(ctx.variableDeclarators()));
+        return (T)( visitTypeType(ctx.typeType()) + " " + (String)visitVariableDeclarators(ctx.variableDeclarators()));
         // QUEDE ACA
     }
     @Override
@@ -224,7 +236,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.methodCall() != null ) return (T) visitMethodCall(ctx.methodCall());
         if (ctx.postfix != null) return (T) (visitExpression(ctx.expression(0)) + ctx.postfix.getText());
         if (ctx.prefix != null) return (T) (ctx.prefix.getText() + visitExpression(ctx.expression(0)));
-        if (ctx.NEW() != null) return (T) "new Object traduction";
+        if (ctx.NEW() != null) return (T) (ctx.NEW().getText() + " " + visitCreator(ctx.creator()));
         if (ctx.typeType() != null) return (T) "Java Cast traduction";
         return (T) ("Bits level operations or ::  or lambda expressison\n ");
         //TODO TODO EL RESTO JAJA
@@ -242,13 +254,75 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitStatement (JavaParser.StatementContext ctx){
+        if (ctx.blockLabel != null )
+            return (T) (visitBlock(ctx.blockLabel));
         if (ctx.statementExpression != null)
             return (T) (visitExpression(ctx.statementExpression)+ "; \n") ;
         if (ctx.identifierLabel != null)
             return (T) (ctx.IDENTIFIER().getText() + ":" + visitStatement(ctx.statement(0)));
+        // IF
+        if (ctx.IF() != null) {
+            if(ctx.ELSE() != null){
+                return (T) (ctx.IF().getText() + " " + visitParExpression(ctx.parExpression()) + " " + visitStatement(ctx.statement(0)) + "\n" +
+                        RepeatChar('\t',ctx.depth()-9) + ctx.ELSE().getText() + " " + visitStatement(ctx.statement(1))+ "\n");
+            }
+            return (T) (ctx.IF().getText() + " " + visitParExpression(ctx.parExpression()) + " " + visitStatement(ctx.statement(0)) + "\n");
+        }
+        // FOR
+        if (ctx.FOR() != null){
+            return (T) (ctx.FOR().getText() + "(" + visitForControl(ctx.forControl()) + ')' + visitStatement(ctx.statement(0)));
+        }
+        // DO
+        if(ctx.DO() != null){
+            return (T) (ctx.DO().getText() + visitStatement(ctx.statement(0)) + "while" + visitParExpression(ctx.parExpression()) + ";\n");
+        }
+        // WHILE
+        if(ctx.WHILE() != null){
+            return (T) (ctx.WHILE().getText() + visitParExpression(ctx.parExpression()) + visitStatement(ctx.statement(0)));
+        }
+
+        // RETURN
+        if(ctx.RETURN() != null)
+            return (T) (ctx.RETURN().getText() + " " + visitExpression(ctx.expression(0)) + ";");
+        // THROW
+        if (ctx.THROW() != null)
+            return (T) (ctx.THROW().getText() + " " + visitExpression(ctx.expression(0)) + ";") ;
+        if(ctx.BREAK() != null){
+            if (ctx.IDENTIFIER() != null )
+                return (T) (ctx.BREAK().getText() + ctx.IDENTIFIER().getText()+ ";\n");
+            return (T) (ctx.BREAK().getText() + ";\n");
+        }
+        if(ctx.CONTINUE() != null){
+            if (ctx.IDENTIFIER() != null )
+                return (T) (ctx.CONTINUE().getText() + ctx.IDENTIFIER().getText()+ ";\n");
+            return (T) (ctx.CONTINUE().getText() + ";\n");
+        }
         return (T) "Missing non StatatementExpression or identifier label statement \n";
-        //TODO TODO EL RESTO JAJA
+        //TODO ASSERT, TRY, SWITCH, SYNC, SEMI
     }
+
+    @Override
+    public T visitParExpression(JavaParser.ParExpressionContext ctx){
+        return (T)("(" + visitExpression(ctx.expression()) +  ")");
+
+    }
+    @Override public T visitForControl(JavaParser.ForControlContext ctx) {
+        if (ctx.enhancedForControl() != null){
+            return (T) visitEnhancedForControl(ctx.enhancedForControl());
+        }else {
+            return (T)  (visitForInit(ctx.forInit()) + "; " + visitExpression(ctx.expression())  + "; " +  visitExpressionList(ctx.expressionList())) ;
+        }
+    }
+    @Override public T visitForInit(JavaParser.ForInitContext ctx) {
+        if(ctx.localVariableDeclaration() != null){
+            return (T) visitLocalVariableDeclaration(ctx.localVariableDeclaration());
+        }
+        if(ctx.expressionList() != null){
+            return (T) visitExpressionList(ctx.expressionList());
+        }
+        return  (T)null;
+    }
+
     @Override
     public T visitMethodCall (JavaParser.MethodCallContext ctx){
         String trad = "()";
@@ -276,7 +350,45 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitPrimitiveType (JavaParser.PrimitiveTypeContext ctx){
-        return (T) "";
+        return (T) "var";
+    }
+    @Override
+    public T  visitCreator(JavaParser.CreatorContext ctx){
+        if (ctx.createdName() != null){
+            if (ctx.classCreatorRest() != null)
+                return (T) ( (String)visitCreatedName(ctx.createdName()) + (String)visitClassCreatorRest(ctx.classCreatorRest()));
+
+            // TODO arrayCreatorRest
+        }
+        // TODO nonWildTypeArguments
+        return  (T)null;
+    }
+
+    @Override
+    public T visitClassCreatorRest(JavaParser.ClassCreatorRestContext ctx) {
+        if (ctx.classBody() != null){
+            return (T) ( (String) visitArguments(ctx.arguments()) + (String)visitClassBody(ctx.classBody()) );
+        }
+        return (T) (visitArguments(ctx.arguments()) );
+    }
+
+    @Override
+    public T visitCreatedName(JavaParser.CreatedNameContext ctx){
+        if (ctx.IDENTIFIER() != null) {
+            String name = ctx.IDENTIFIER(0).getText();
+            if (name.equals("RuntimeException") )
+                name = "Error";
+            return (T) (name );  // TODO typeArgumentsOrDiamond
+        }
+        if( ctx.primitiveType() != null){
+            return (T) visitPrimitiveType(ctx.primitiveType());
+        }
+
+        return (T)null;
+    }
+
+    @Override public T visitArguments(JavaParser.ArgumentsContext ctx) {
+        return (T) ("(" + visitExpressionList(ctx.expressionList()) + ")");
     }
 
 }
