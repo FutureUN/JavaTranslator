@@ -79,7 +79,6 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
     @Override
     public T visitClassBodyDeclaration(JavaParser.ClassBodyDeclarationContext ctx) {
-
         JavaParser.MemberDeclarationContext tmp = ctx.memberDeclaration();
         String modifier = "";  // Solo usaremos STATIC
 
@@ -232,6 +231,9 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             return (T)visitLiteral(ctx.literal());
         if(ctx.IDENTIFIER() != null)
             return (T)(ctx.IDENTIFIER().toString());
+        if(ctx.THIS() != null)
+            return  (T)(ctx.THIS().toString());
+
         return (T) null;
         // TODO FALTA: THIS, SUPER , TYPTTYPTORVOID, NONWILDCARDTYPEARG
     }
