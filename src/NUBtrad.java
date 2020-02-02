@@ -22,17 +22,18 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
-      //  return (T)("class " + ctx.depth() + " - " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
+        return (T)("class " + ctx.depth() + " - " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
         // TODO typeParameters , typeType, TypeList
-        visitClassBody(ctx.classBody());
-        return null;
+
     }
     @Override
     public  T visitClassBody(JavaParser.ClassBodyContext ctx){
         int cnt_methods = 0;
-        System.out.println("los metodos de mi clase son: ");
         TreeSet<String> RepeatedMethodIds = new TreeSet<>();
+
         Map <String, ArrayList<Integer>> MapMethodsIdx = new HashMap<>();
+        Map <Integer, Boolean> BodyDecHasDupMethod = new HashMap<>();
+
         for (int i = 0; i<ctx.classBodyDeclaration().size(); i++) {
             JavaParser.ClassBodyDeclarationContext body_declaration =  ctx.classBodyDeclaration().get(i);
             
@@ -46,33 +47,34 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
                 if (!MapMethodsIdx.containsKey(ID)) MapMethodsIdx.put(ID, new ArrayList<Integer>());
                 MapMethodsIdx.get(ID).add(i);
              
-                if (MapMethodsIdx.get(ID).size() > 1)
+                if (MapMethodsIdx.get(ID).size() > 1) {
+                    if (!BodyDecHasDupMethod.containsKey(MapMethodsIdx.get(ID).get(0)))
+                        BodyDecHasDupMethod.put(MapMethodsIdx.get(ID).get(0), true);
+                    BodyDecHasDupMethod.put(i, true);
                     RepeatedMethodIds.add(ID);
+                }
             }
         }
 
-        System.out.println("there are " + cnt_methods + " methods");
-        for (String id : RepeatedMethodIds){
-            System.out.print( id + " -> [");
-            Boolean first = true;
-            for (Integer idx : MapMethodsIdx.get(id)) {
-                if (!first) System.out.print( ", ");
-                System.out.print(idx);
-                first = false;
-            }
-            System.out.println("]");
-        }
-       
-
-        return null;
-       /* String traduc = "";
+        String traduc = "";
         for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
+            if(BodyDecHasDupMethod.containsKey(i)) continue;
             traduc += RepeatChar('\t',ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
 
 
         }
+
+
+        // TODO : Send map to method mergeMethods
+
+
+        for ( String ID : RepeatedMethodIds) {
+            traduc += RepeatChar('\t',ctx.depth()-3)+ ID + "(){\n //TODO: merge methods \n }\n";
+
+        }
+
         return (T)traduc;
-        */
+
     }
 
     @Override
