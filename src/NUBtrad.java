@@ -14,21 +14,25 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             if (body_declaration.memberDeclaration() == null) continue;
             JavaParser.MemberDeclarationContext member = body_declaration.memberDeclaration();
 
-            if (member.methodDeclaration() != null) {
+                if (member.methodDeclaration() != null || member.constructorDeclaration() != null) {
+                    String ID = "";
 
-                String ID = member.methodDeclaration().IDENTIFIER().getText();
+                    if(member.constructorDeclaration() != null)
+                        ID = "constructor";
+                    else
+                        ID = member.methodDeclaration().IDENTIFIER().getText();
 
-                if (!MapMethodsIdx.containsKey(ID)) MapMethodsIdx.put(ID, new ArrayList<>());
+                    if (!MapMethodsIdx.containsKey(ID)) MapMethodsIdx.put(ID, new ArrayList<>());
 
-                MapMethodsIdx.get(ID).add(i);
+                    MapMethodsIdx.get(ID).add(i);
 
-                if (MapMethodsIdx.get(ID).size() > 1) {
-                    if (!BodyDecHasDupMethod.containsKey(MapMethodsIdx.get(ID).get(0)))
-                        BodyDecHasDupMethod.put(MapMethodsIdx.get(ID).get(0), true);
-                    BodyDecHasDupMethod.put(i, true);
-                    RepeatedMethodIds.add(ID);
+                    if (MapMethodsIdx.get(ID).size() > 1) {
+                        if (!BodyDecHasDupMethod.containsKey(MapMethodsIdx.get(ID).get(0)))
+                            BodyDecHasDupMethod.put(MapMethodsIdx.get(ID).get(0), true);
+                        BodyDecHasDupMethod.put(i, true);
+                        RepeatedMethodIds.add(ID);
+                    }
                 }
-            }
         }
     }
 
@@ -68,6 +72,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public  T visitClassBody(JavaParser.ClassBodyContext ctx){
         int cnt_methods = 0;
+
 
         TreeSet<String> RepeatedMethodIds = new TreeSet<>();
         Map <String, ArrayList<Integer>> MapMethodsIdx = new HashMap<>();
@@ -115,6 +120,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
     @Override
     public T visitMemberDeclaration(JavaParser.MemberDeclarationContext ctx){
+
         JavaParser.MethodDeclarationContext tmp = ctx.methodDeclaration();
         if (ctx.methodDeclaration() != null){
             return (T) (visitMethodDeclaration(ctx.methodDeclaration()));
@@ -131,7 +137,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
     @Override
     public T visitConstructorDeclaration(JavaParser.ConstructorDeclarationContext ctx){
-        return (T) ( ctx.IDENTIFIER().getText() + visitFormalParameters(ctx.formalParameters()) + visitBlock(ctx.constructorBody));
+        return (T) ( "constructor" + visitFormalParameters(ctx.formalParameters()) + visitBlock(ctx.constructorBody));
 
     }
     @Override
@@ -178,7 +184,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         String trad = "";
         for (int i = 0 ; i < ctx.blockStatement().size(); i++)
             trad += RepeatChar('\t',ctx.depth()-7) +  (String) visitBlockStatement((ctx.blockStatement(i)));
-        return (T) ("{ \n" + trad + "\n" + RepeatChar('\t',ctx.depth()-8) + "}");
+        return (T) ("{ \n" + trad + "\n" + RepeatChar('\t',ctx.depth()-8) + "}\n");
     }
     @Override
     public T visitBlockStatement( JavaParser.BlockStatementContext ctx){
@@ -256,7 +262,14 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.postfix != null) return (T) (visitExpression(ctx.expression(0)) + ctx.postfix.getText());
         if (ctx.prefix != null) return (T) (ctx.prefix.getText() + visitExpression(ctx.expression(0)));
         if (ctx.NEW() != null) return (T) (ctx.NEW().getText() + " " + visitCreator(ctx.creator()));
-        if (ctx.typeType() != null) return (T) "Java Cast traduction";
+        if (ctx.typeType() != null) {
+            String _number = "float int double short";
+            if (  _number.contains(ctx.typeType().getText()) )
+                return (T)  ("Number(" + visitExpression(ctx.expression(0)) + ")");
+            if( ctx.typeType().getText().equals("String"))
+                return (T)  ("String(" + visitExpression(ctx.expression(0)) + ")");
+
+        }
         return (T) ("Bits level operations or ::  or lambda expressison\n ");
         //TODO TODO EL RESTO JAJA
     }
@@ -367,6 +380,13 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         else
             return (T)(visitPrimitiveType(ctx.primitiveType()));
     }
+
+    @Override public T visitClassOrInterfaceType(JavaParser.ClassOrInterfaceTypeContext ctx) {
+        if (ctx.DOT().size() <= 0 )
+            return (T) "let";
+        return  (T) "TODO classOrInterfaceType";
+    }
+
     @Override
     public T visitPrimitiveType (JavaParser.PrimitiveTypeContext ctx){
         return (T) "var";
@@ -407,7 +427,9 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
 
     @Override public T visitArguments(JavaParser.ArgumentsContext ctx) {
-        return (T) ("(" + visitExpressionList(ctx.expressionList()) + ")");
+        if( ctx.expressionList()!= null)
+            return (T) ("(" + visitExpressionList(ctx.expressionList()) + ")");
+        return (T) "()";
     }
 
 }
