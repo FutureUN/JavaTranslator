@@ -15,9 +15,9 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     public T visitTypeDeclaration(JavaParser.TypeDeclarationContext ctx) {
         if (ctx.classDeclaration() != null){
             System.out.println(visitClassDeclaration(ctx.classDeclaration()));
-            return (T) null;
+            return (T) "";
         }
-        return (T) null;
+        return (T) "Different from class declaration is missing";
         //TODO enumDeclaration interfaceDeclaration annotationTypeDeclaration
     }
     @Override
@@ -101,7 +101,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             return (T) (visitMethodDeclaration(ctx.methodDeclaration()));
         }
         // TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla
-        return (T) null;
+        return (T) "TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla";
     }
     @Override
     public T visitMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
@@ -157,7 +157,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.statement() != null){
             return (T) (visitStatement(ctx.statement()));
         }
-        return (T) null;
+        return (T) "TODO localTypeDecl";
         //TODO localTypeDecl
     }
 
@@ -221,6 +221,11 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
                 trad = (String) visitExpression(ctx.expression(2));
             return (T) (visitExpression(ctx.expression(0)) + ctx.bop.getText() + visitExpression(ctx.expression(1)) + trad);
         }
+        if (ctx.methodCall() != null ) return (T) visitMethodCall(ctx.methodCall());
+        if (ctx.postfix != null) return (T) (visitExpression(ctx.expression(0)) + ctx.postfix.getText());
+        if (ctx.prefix != null) return (T) (ctx.prefix.getText() + visitExpression(ctx.expression(0)));
+        if (ctx.NEW() != null) return (T) "new Object traduction";
+        if (ctx.typeType() != null) return (T) "Java Cast traduction";
         return (T) ("caso prueba");
         //TODO TODO EL RESTO JAJA
     }
@@ -232,7 +237,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             return (T)visitLiteral(ctx.literal());
         if(ctx.IDENTIFIER() != null)
             return (T)(ctx.IDENTIFIER().toString());
-        return (T) null;
+        return (T) "TODO FALTA: THIS, SUPER , TYPTTYPTORVOID, NONWILDCARDTYPEARG";
         // TODO FALTA: THIS, SUPER , TYPTTYPTORVOID, NONWILDCARDTYPEARG
     }
     @Override
@@ -241,7 +246,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             return (T) (visitExpression(ctx.statementExpression)+ "; \n") ;
         if (ctx.identifierLabel != null)
             return (T) (ctx.IDENTIFIER().getText() );
-        return (T) null;
+        return (T) "Missing non StatatementExpression or identifier label statement \n";
         //TODO TODO EL RESTO JAJA
     }
     @Override
