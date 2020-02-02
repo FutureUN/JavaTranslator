@@ -226,7 +226,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.prefix != null) return (T) (ctx.prefix.getText() + visitExpression(ctx.expression(0)));
         if (ctx.NEW() != null) return (T) "new Object traduction";
         if (ctx.typeType() != null) return (T) "Java Cast traduction";
-        return (T) ("caso prueba");
+        return (T) ("Bits level operations or ::  or lambda expressison\n ");
         //TODO TODO EL RESTO JAJA
     }
     @Override
@@ -245,7 +245,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.statementExpression != null)
             return (T) (visitExpression(ctx.statementExpression)+ "; \n") ;
         if (ctx.identifierLabel != null)
-            return (T) (ctx.IDENTIFIER().getText() );
+            return (T) (ctx.IDENTIFIER().getText() + ":" + visitStatement(ctx.statement(0)));
         return (T) "Missing non StatatementExpression or identifier label statement \n";
         //TODO TODO EL RESTO JAJA
     }
