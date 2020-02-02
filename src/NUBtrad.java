@@ -273,15 +273,35 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.FOR() != null){
             return (T) (ctx.FOR().getText() + "(" + visitForControl(ctx.forControl()) + ')' + visitStatement(ctx.statement(0)));
         }
+        // DO
+        if(ctx.DO() != null){
+            return (T) (ctx.DO().getText() + visitStatement(ctx.statement(0)) + "while" + visitParExpression(ctx.parExpression()) + ";\n");
+        }
+        // WHILE
+        if(ctx.WHILE() != null){
+            return (T) (ctx.WHILE().getText() + visitParExpression(ctx.parExpression()) + visitStatement(ctx.statement(0)));
+        }
+
         // RETURN
         if(ctx.RETURN() != null)
             return (T) (ctx.RETURN().getText() + " " + visitExpression(ctx.expression(0)) + ";");
         // THROW
         if (ctx.THROW() != null)
             return (T) (ctx.THROW().getText() + " " + visitExpression(ctx.expression(0)) + ";") ;
+        if(ctx.BREAK() != null){
+            if (ctx.IDENTIFIER() != null )
+                return (T) (ctx.BREAK().getText() + ctx.IDENTIFIER().getText()+ ";\n");
+            return (T) (ctx.BREAK().getText() + ";\n");
+        }
+        if(ctx.CONTINUE() != null){
+            if (ctx.IDENTIFIER() != null )
+                return (T) (ctx.CONTINUE().getText() + ctx.IDENTIFIER().getText()+ ";\n");
+            return (T) (ctx.CONTINUE().getText() + ";\n");
+        }
+
 
         return (T) "Missing non StatatementExpression or identifier label statement \n";
-        //TODO TODO EL RESTO JAJA
+        //TODO ASSERT, TRY, SWITCH, SYNC, SEMI
     }
 
     @Override
@@ -373,6 +393,5 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override public T visitArguments(JavaParser.ArgumentsContext ctx) {
         return (T) ("(" + visitExpressionList(ctx.expressionList()) + ")");
     }
-
 
 }
