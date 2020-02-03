@@ -2,7 +2,7 @@ import java.util.*;
 
 public class NUBtrad<T> extends JavaParserBaseVisitor {
 
-
+    static Integer depth = 1;
     public void SearchForRepeatedMethods(TreeSet<String> RepeatedMethodIds,
                                          Map <String, ArrayList<Integer>> MapMethodsIdx,
                                          Map <Integer, String> BodyDecHasDupMethod,
@@ -70,7 +70,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
 
     public T visitClassDeclaration(JavaParser.ClassDeclarationContext ctx){
-        return (T)("class " + ctx.depth() + " - " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
+        return (T)("class " + ctx.IDENTIFIER().toString()+ "{\n" + visitClassBody(ctx.classBody()) +  "\n}" );
         // TODO typeParameters , typeType, TypeList
 
     }
@@ -90,16 +90,16 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             if (MethodTranslated.contains(i)) continue;
             if(BodyDecHasDupMethod.containsKey(i)) {
                 String ID = BodyDecHasDupMethod.get(i);
-                traduc  += RepeatChar('\t',ctx.depth()-3)+ ID + "(...args){\n" + RepeatChar('\t',ctx.depth()-3)
+                traduc  += RepeatChar('\t',depth)+ ID + "(...args){\n" + RepeatChar('\t',ctx.depth()-3)
                         + "//TODO: Change inner method according to ammount of args received. See : https://www.oreilly.com/library/view/javascript-the-definitive/0596101996/re05.html \n";
 
                 traduc += MergeMethods(ID, MapMethodsIdx, ctx) +
-                        RepeatChar('\t', ctx.depth()-3) + "}\n";
+                        RepeatChar('\t', depth) + "}\n";
 
                 for(Integer it : MapMethodsIdx.get(ID)) MethodTranslated.add(it);
             }
             else
-                traduc += RepeatChar('\t',ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
+                traduc += RepeatChar('\t',depth) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
         }
 
 
@@ -190,11 +190,13 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     }
     @Override
     public T visitBlock(JavaParser.BlockContext ctx){
+        depth++;
         String trad = "";
         if (ctx == null) return (T) trad;
         for (int i = 0 ; i < ctx.blockStatement().size(); i++)
-            trad += RepeatChar('\t',ctx.depth()-7) +  (String) visitBlockStatement((ctx.blockStatement(i)));
-        return (T) ("{ \n" + trad + "\n" + RepeatChar('\t',ctx.depth()-8) + "}\n");
+            trad += RepeatChar('\t',depth) +  (String) visitBlockStatement((ctx.blockStatement(i)));
+
+        return (T) ("{ \n" + trad + "\n" + RepeatChar('\t',--depth) + "}\n");
     }
     @Override
     public T visitBlockStatement( JavaParser.BlockStatementContext ctx){
@@ -306,7 +308,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         if (ctx.IF() != null) {
             if(ctx.ELSE() != null){
                 return (T) (ctx.IF().getText() + " " + visitParExpression(ctx.parExpression()) + " " + visitStatement(ctx.statement(0)) + "\n" +
-                        RepeatChar('\t',ctx.depth()-9) + ctx.ELSE().getText() + " " + visitStatement(ctx.statement(1))+ "\n");
+                        RepeatChar('\t',depth) + ctx.ELSE().getText() + " " + visitStatement(ctx.statement(1))+ "\n");
             }
             return (T) (ctx.IF().getText() + " " + visitParExpression(ctx.parExpression()) + " " + visitStatement(ctx.statement(0)) + "\n");
         }
