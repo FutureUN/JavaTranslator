@@ -307,10 +307,10 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         // IF
         if (ctx.IF() != null) {
             if(ctx.ELSE() != null){
-                return (T) (ctx.IF().getText() + " " + visitParExpression(ctx.parExpression()) + " " + visitStatement(ctx.statement(0)) + "\n" +
-                        RepeatChar('\t',depth) + ctx.ELSE().getText() + " " + visitStatement(ctx.statement(1))+ "\n");
+                return (T) (ctx.IF().getText() + " " + visitParExpression(ctx.parExpression()) + " " + visitStatement(ctx.statement(0)) +
+                        RepeatChar('\t',depth) + ctx.ELSE().getText() + " " + visitStatement(ctx.statement(1)));
             }
-            return (T) (ctx.IF().getText() + " " + visitParExpression(ctx.parExpression()) + " " + visitStatement(ctx.statement(0)) + "\n");
+            return (T) (ctx.IF().getText() + " " + visitParExpression(ctx.parExpression()) + " " + visitStatement(ctx.statement(0)) );
         }
         // FOR
         if (ctx.FOR() != null){
