@@ -98,8 +98,11 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
                 for(Integer it : MapMethodsIdx.get(ID)) MethodTranslated.add(it);
             }
-            else
-                traduc += RepeatChar('\t',depth) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
+            else {
+                String tmp = (String) (visitClassBodyDeclaration(ctx.classBodyDeclaration(i)));
+                if (tmp.length() > 0)
+                    traduc += RepeatChar('\t', depth) + tmp + "\n";
+            }
         }
 
 
@@ -135,13 +138,10 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             return (T) (visitMethodDeclaration(ctx.methodDeclaration()));
         }
         if (ctx.constructorDeclaration() != null){
-
-
-
             return (T) (visitConstructorDeclaration(ctx.constructorDeclaration()));
         }
         // TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla
-        return (T) "TODO genericMethoddec, fieldDecl, contrucDecl, geneConsDecl, interDecla, annoTypeDecla, classDecla, enumDecla";
+        return (T) "";
     }
 
     @Override
@@ -282,7 +282,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
                 return (T)  ("String(" + visitExpression(ctx.expression(0)) + ")");
 
         }
-        return (T) ("Bits level operations or ::  or lambda expressison\n ");
+        return (T) ("Bits level operations or ::  or lambda expressison ");
         //TODO TODO EL RESTO JAJA
     }
     @Override
