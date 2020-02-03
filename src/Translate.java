@@ -20,9 +20,11 @@ public class Translate {
 
         ArrayList<String> comments = new ArrayList<>();
         for ( Token tok : tokens.getTokens()) {
-        //    if (tok.getChannel() == 1 && tok.getText().indexOf('/') >= 0) traducinador.AddComment(tok.getText());
+            if (tok.getChannel() == 1 && tok.getText().indexOf('/') >= 0) comments.add(tok.getText());
            // System.out.println(tok.getText());
         }
+        for (int i =0; i < Math.min(3, comments.size()); i++ )
+            System.out.println(comments.get(i));
 
         // All comments are stored in 'comments' array list
 

@@ -118,13 +118,18 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     public T visitClassBodyDeclaration(JavaParser.ClassBodyDeclarationContext ctx) {
         JavaParser.MemberDeclarationContext tmp = ctx.memberDeclaration();
         String modifier = "";  // Solo usaremos STATIC
-
+        Boolean is_abstract = false;
         for ( int i =0; i < ctx.modifier().size() ; i ++){
             if(ctx.modifier(i).classOrInterfaceModifier().STATIC() != null){
                 modifier = "static ";
             }
+            if (ctx.modifier(i).classOrInterfaceModifier().ABSTRACT() != null) is_abstract = true;
         }
+
         String traduc  =  modifier +  (String)(visitMemberDeclaration(ctx.memberDeclaration())) ;
+        if (is_abstract) traduc = "// Abstract method add alert inside method advising that method must be implemented in child classes" + traduc;
+
+
         return (T) traduc;
         //TODO STATIC Y ;
     }
@@ -291,9 +296,12 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
             return (T)visitExpression(ctx.expression());
         if (ctx.literal() != null)
             return (T)visitLiteral(ctx.literal());
-        if(ctx.IDENTIFIER() != null)
-            return (T)(ctx.IDENTIFIER().toString());
-            return  (T)(ctx.THIS().toString());
+        if(ctx.IDENTIFIER() != null) {
+            if (ctx.IDENTIFIER().toString().equals("System"))
+                return (T) ("/*Change for equivalent system function in javascript*/ " + (ctx.IDENTIFIER().toString()));
+            return (T) (ctx.IDENTIFIER().toString());
+        }
+        return  (T)(ctx.THIS().toString());
         // TODO FALTA: THIS, SUPER , TYPTTYPTORVOID, NONWILDCARDTYPEARG
     }
     @Override
