@@ -191,6 +191,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
     @Override
     public T visitBlock(JavaParser.BlockContext ctx){
         String trad = "";
+        if (ctx == null) return (T) trad;
         for (int i = 0 ; i < ctx.blockStatement().size(); i++)
             trad += RepeatChar('\t',ctx.depth()-7) +  (String) visitBlockStatement((ctx.blockStatement(i)));
         return (T) ("{ \n" + trad + "\n" + RepeatChar('\t',ctx.depth()-8) + "}\n");
@@ -323,8 +324,10 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
         }
 
         // RETURN
-        if(ctx.RETURN() != null)
-            return (T) (ctx.RETURN().getText() + " " + visitExpression(ctx.expression(0)) + ";");
+        if(ctx.RETURN() != null){
+            String trad = " ";
+            if ( ctx.expression() == null) trad = (String) visitExpression(ctx.expression(0));
+            return (T) (ctx.RETURN().getText() + trad + ";");}
         // THROW
         if (ctx.THROW() != null)
             return (T) (ctx.THROW().getText() + " " + visitExpression(ctx.expression(0)) + ";") ;
