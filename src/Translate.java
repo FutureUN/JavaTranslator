@@ -20,13 +20,13 @@ public class Translate {
 
         ArrayList<String> comments = new ArrayList<>();
         for ( Token tok : tokens.getTokens()) {
-            if (tok.getChannel() == 1 && tok.getText().indexOf('/') >= 0) comments.add(tok.getText());
+        //    if (tok.getChannel() == 1 && tok.getText().indexOf('/') >= 0) traducinador.AddComment(tok.getText());
            // System.out.println(tok.getText());
         }
 
         // All comments are stored in 'comments' array list
 
-   ///     for (String cmt : comments) System.out.println(cmt);
+      //  for (String cmt : comments) System.out.println(cmt);
         traducinador.visit(tree);
     }
 }

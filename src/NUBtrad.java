@@ -5,7 +5,7 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
     public void SearchForRepeatedMethods(TreeSet<String> RepeatedMethodIds,
                                          Map <String, ArrayList<Integer>> MapMethodsIdx,
-                                         Map <Integer, Boolean> BodyDecHasDupMethod,
+                                         Map <Integer, String> BodyDecHasDupMethod,
                                          JavaParser.ClassBodyContext ctx) {
 
         for (int i = 0; i<ctx.classBodyDeclaration().size(); i++) {
@@ -28,8 +28,8 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
                     if (MapMethodsIdx.get(ID).size() > 1) {
                         if (!BodyDecHasDupMethod.containsKey(MapMethodsIdx.get(ID).get(0)))
-                            BodyDecHasDupMethod.put(MapMethodsIdx.get(ID).get(0), true);
-                        BodyDecHasDupMethod.put(i, true);
+                            BodyDecHasDupMethod.put(MapMethodsIdx.get(ID).get(0), ID);
+                        BodyDecHasDupMethod.put(i, ID);
                         RepeatedMethodIds.add(ID);
                     }
                 }
@@ -41,16 +41,21 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
                              JavaParser.ClassBodyContext ctx) {
         String ret = "";
         for (Integer idx : MapMethodsIdx.get(IDMethod) ) {
-            ret += RepeatChar('\t', ctx.depth()-2)  + ctx.classBodyDeclaration(idx).getText() + "\n";
+            String t1 = (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(idx)));
+            String t2 = "";
+            for (int i =0; i<t1.length(); i++) { if (t1.charAt(i) =='\n') t2 += "\n\t"; else t2 += t1.charAt(i);}
+            ret += RepeatChar('\t', 2) + t2 +  "\n";
         }
+
         return ret;
     }
-
     public String RepeatChar(char c, int n) {
         String str = "";
         for (int i=0; i<n; i++) str+=c;
         return str;
     }
+
+
 
 
     @Override
@@ -76,27 +81,31 @@ public class NUBtrad<T> extends JavaParserBaseVisitor {
 
         TreeSet<String> RepeatedMethodIds = new TreeSet<>();
         Map <String, ArrayList<Integer>> MapMethodsIdx = new HashMap<>();
-        Map <Integer, Boolean> BodyDecHasDupMethod = new HashMap<>();
-
+        Map <Integer, String> BodyDecHasDupMethod = new HashMap<>();
+        HashSet<Integer> MethodTranslated= new HashSet<>();
         SearchForRepeatedMethods(RepeatedMethodIds, MapMethodsIdx, BodyDecHasDupMethod, ctx);
 
         String traduc = "";
         for ( int i = 0 ; i < ctx.classBodyDeclaration().size(); i ++){
-            if(BodyDecHasDupMethod.containsKey(i)) continue;
-            traduc += RepeatChar('\t',ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
+            if (MethodTranslated.contains(i)) continue;
+            if(BodyDecHasDupMethod.containsKey(i)) {
+                String ID = BodyDecHasDupMethod.get(i);
+                traduc  += RepeatChar('\t',ctx.depth()-3)+ ID + "(...args){\n" + RepeatChar('\t',ctx.depth()-3)
+                        + "//TODO: Change inner method according to ammount of args received. See : https://www.oreilly.com/library/view/javascript-the-definitive/0596101996/re05.html \n";
+
+                traduc += MergeMethods(ID, MapMethodsIdx, ctx) +
+                        RepeatChar('\t', ctx.depth()-3) + "}\n";
+
+                for(Integer it : MapMethodsIdx.get(ID)) MethodTranslated.add(it);
+            }
+            else
+                traduc += RepeatChar('\t',ctx.depth()-3) + (String)(visitClassBodyDeclaration(ctx.classBodyDeclaration(i))) + "\n";
         }
 
 
         // TODO : Send map to method mergeMethods
 
 
-        for ( String ID : RepeatedMethodIds) {
-            traduc += RepeatChar('\t',ctx.depth()-3)+ ID + "(){\n //TODO: merge methods \n";
-
-            traduc += MergeMethods(ID, MapMethodsIdx, ctx) +
-                    RepeatChar('\t', ctx.depth()-3) + "}\n";
-
-        }
 
         return (T)traduc;
 
